@@ -1,0 +1,1812 @@
+import javax.swing.*;
+import javax.swing.Timer;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.io.*;
+
+/** ReactionTimeExp - Experiment software to measure various reaction time
+* operations.
+* <p>
+*
+* Five reaction-time operations are implemented:<p>
+*
+* <ul>
+* <li>Simple Reaction
+* <li>Physical Matching
+* <li>Name Matching
+* <li>Class Matching
+* <li>Visual Search
+* </ul>
+*
+* In all cases, an initial visual stimulus is presented 
+* showing a code (a letter, digit, or word)
+* which the user perceives and stores in short-term memory.  Following a random delay of 2 to 5
+* seconds a second stimulus appears whereupon the user presses a key as quickly
+* as possible according to the criterion of the operation.
+* <p>
+*
+* Upon launching, a setup dialog is presented:
+* <p>
+* 
+* <center><img src="ReactionTimeExp-setup.jpg"></center>
+* <p>
+*
+* The experimenter selects an experiment mode, a participant code, and a block
+* code (used in naming the output data files).  Clicking "Continue" begins 
+* a block of 10 trials.
+* <p>
+*
+* The operating modes are as follows:
+* <p>
+* 
+* <h3>Simple Reaction</h3>
+* <center><img src="ReactionTimeExp-sr1.jpg">
+* <img src="ReactionTimeExp-sr2.jpg"></center>
+* <p>
+*
+* A window appears containing a grey box 
+* in the centre.  This is the initial stimulus.  After a delay,
+* the box turns red whereupon the user presses a key as quickly as possible.
+* Any key may be pressed.
+* <p>
+*
+* <h3>Physical Matching</h3>
+* <center><img src="ReactionTimeExp-pm1.jpg">
+* <img src="ReactionTimeExp-pm2.jpg"></center>
+* <p>
+* The initial stimulus is a five-letter word.  After a delay, the second
+* stimulus appears.  The second stimulus is also a five-letter word. 
+* Both words are presented in lowercase.  If the second word matches
+* the first, the user presses "f" or "j" on the keyboard.  If the second
+* word does not match the first, any other key is pressed.
+* <p>
+*
+* For each trial, there is a 50% probability of a match.
+* <p>
+*
+* A reasonable configuration for this mode (and the others below) is to instruct 
+* participants to position their dominant hand on the home row
+* of the system keyboard.  Left-handed users can press "f" with the index finger
+* for a match, or "d" with the middle finger for no-match.  
+* Right-handed users can press "j" with the index finger 
+* for a match or "k" with the middle finger for no-match.  See below:
+* <p>
+*
+* <center>
+* <img src="ReactionTimeExp-lefthand.jpg">
+* &nbsp;&nbsp;&nbsp;&nbsp;
+* <img src="ReactionTimeExp-righthand.jpg">
+* </center>
+* <p>
+*
+* <h3>Name Matching</h3>
+* <center><img src="ReactionTimeExp-nm1.jpg">
+* <img src="ReactionTimeExp-nm2.jpg"></center>
+* <p>
+*
+* Name matching is the same as physical matching except 
+* the words may appear in uppercase or lowercase, monospaced or sans serif,
+* plain or bold, 18 pt or 20 point.  A match
+* is deemed to occur if the words are the same, regardless
+* of the look.
+* <p>
+*
+* For each trial, there is a 50% probability of a match.
+* <p>
+*
+* Name matching takes longer than physical matching because 
+* an extra cognitive operation is required to deduce equivalence
+* (see Card et al., 1983, p. 69).
+*
+* <h3>Class Matching</h3>
+* <center><img src="ReactionTimeExp-cm1.jpg">
+* <img src="ReactionTimeExp-cm2.jpg"></center>
+* <p>
+*
+* The initial stimulus contains a letter or digit.  After a delay
+* a second stimulus appears also containing a letter or digit. 
+* The font is monospaced or sans serif, plain or italic, 18 pt or 20 pt.
+* A match is deemed to occur
+* if both symbols are of the same class; that is, both are letters 
+* or both are digits.
+* <p>
+*
+* To avoid confusion, 0 (digit) and O (letter) are not included, nor 
+* are 1 (digit) and I (letter).
+* <p>
+*
+* For each trial, there is a 50% probability of a match.
+* <p>
+*
+* Class matching takes longer than name matching because "the
+* user has to make multiple references to long-term memory"
+* (Card et al., 1983, p. 70).
+*
+*
+* <h3>Visual Search</h3>
+* <center><img src="ReactionTimeExp-vs1.jpg">
+* <img src="ReactionTimeExp-vs2.jpg"></center>
+* <p>
+* 
+* The visual search mode requires specifying through the setup dialog
+* a search space of 1, 2, 4, 8, 16, or 32 items.  (A choice of 16 is shown in the above
+* screen snap.)
+* <p>
+*
+* The initial stimulus contains a letter.  After a delay the squares in the
+* search space are populated with letters selected a random.  A match is deemed to
+* occur if the 
+* letter shown initially is in the search space.
+* <p>
+*
+* For each trial, there is a 50% probability of a match.
+* <p>
+*
+* Note that visual searching with <i>n</i> = 1 is the same as physical matching.  
+* As implemented here, the only difference is that the physical matching
+* mode uses five-letter words whereas the visual searching mode uses single
+* letters.
+* <p>
+*
+* <h3>Data and Results</h3>
+* At the end of a block of 10 trials, a popup dialog appears showing 
+* summary results.  The following is an example for the simple reaction time
+* mode:
+* <p>
+*
+* <center><img src="ReactionTimeExp-results-sr.jpg"></center>
+* <p>
+*
+* The data are saved in two output files.  An "sd1" file contains the data
+* on a per-trial basis.  An "sd2" file contains summary data for the
+* block.  The data corresponding to the above dialog
+* are as follows: 
+* <p>
+* 
+* SD1 data file:
+* <p>
+*
+* <pre>
+*     time,313,265,219,234,250,250,313,250,250,266 
+* </pre>
+* <p>
+*
+* SD2 data file:
+* <p>
+*
+* <pre>
+*     Participant,Block,Mode,mean,min,max,sd
+*     P99,practice,SR,261.0,219,313,30.597748646301124
+* </pre>
+* <p>
+*
+* The data files are more elaborate for the other modes, since the possibility
+* of errors exists.  Furthermore, the reaction times may be different depending on 
+* whether or not a match occurred.  This is particularly true for the visual 
+* search mode, since deducing no-match requires an exhaustive search whereas deducing
+* a match only requires a partial search. (The search ends when the letter is found.)  
+* An example of the results for the visual search mode with <i>n</i> = 16 follows.
+* <p>
+*
+* Results popup dialog:
+* <p>
+*
+* <center><img src="ReactionTimeExp-results-vs.jpg"></center>
+* <p>
+*
+* SD1 data file:
+* <p>
+* 
+* <pre>
+*     time,766,1188,1047,1640,656,1391,1610,1031,797,1046
+*     keys,k,k,k,k,j,k,k,k,j,k
+*     match,0,1,0,0,1,0,0,0,1,0
+*     errors,0,1,0,0,0,0,0,0,0,0  
+* </pre>
+*
+* SD2 data file:
+* <p>
+*
+* <pre>
+*     Participant,Block,Mode,Number_of_Items,RT_match,n_match,n_match_error,RT_no-match,n_no-match,n_no-match_error
+*     P99,practice,VS,16,726.5,2,1,1218.7142857142858,7,0
+* </pre>
+* <p>
+*
+* <h3>Time Measurements</h3>
+*
+* Time measurements begin with the presentation of the second stimulus and end
+* with the button-down action in response to the stimulus:
+* <p>
+*
+* <center>
+* <img src="ReactionTimeExp-timing1.jpg">
+* </center>
+* <p>
+*
+* Thus, the measurement
+* includes both the time to react and the time to move the finger to a button
+* and press down the button.  Videotaped analyses using VirtualDub reveal typically
+* 10 frames from 
+* the first movement of the finger to the dispatch of the button-down event.
+*  At 60 frames/s,
+* this is equivalent to 167 ms &#177;16.7 ms:
+* <p>
+*
+* <center>
+* <img src="ReactionTimeExp-timing2.jpg">
+* </center>
+* <p>
+*
+* This may be important, depending on how the data from this software are interpreted.
+* For example, reaction time is typically defined as the time between the 
+* occurrence of a stimulus and the <i>initiation</i> of a response assigned to it
+* (Posner and Fitts, 1986, p. 95).  If the objective is to measure reaction time
+* alone, then it is important to bear in mind that 
+* the measurements are inflated by about 167 ms.
+* <p>
+*
+* @see <a href="ReactionTimeExp.java">source code</a>
+* @author Scott MacKenzie, 2008-2011
+*/
+public class ReactionTimeExp
+{
+   public static void main(String[] args)
+   {
+		int maxTrials = 10;
+		if (args.length == 1)
+		{
+			try
+			{	
+				maxTrials = Integer.parseInt(args[0]);				
+			}
+			catch (NumberFormatException nfe)
+			{
+				System.out.println("Usage: java ReactionTimeExp [n]\n\n" +
+					                "where n = number of trials per block (default is 10)");
+				System.exit(0);
+			}
+		}
+
+		// use look and feel for my system (Win32)
+      try {
+         UIManager.setLookAndFeel(
+            UIManager.getSystemLookAndFeelClassName());
+      } catch (Exception e) {}
+
+      ReactionTimeExpFrame frame = new ReactionTimeExpFrame(maxTrials);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.setTitle("ReactionTimeExp");
+      frame.pack();
+
+		Dimension d1 = frame.getSize();
+		Dimension d2 = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (d2.width - d1.width) / 2;
+		int y = (d2.height - d1.height) / 2; 
+		frame.setLocation(new Point(x, y));
+      frame.setVisible(true);
+   }
+}
+
+// -----------------------------
+// define the application window
+// -----------------------------
+
+class ReactionTimeExpFrame extends JFrame implements ActionListener
+{
+   // -----------------------------------------------------------------
+   // declare variables and components accessed by more than one method
+   // -----------------------------------------------------------------
+
+	SRDialog sr; // simple reaction
+	PMDialog pm; // physical matching
+	NMDialog nm; // name matching
+	CMDialog cm; // class matching
+	VSDialog vs; // visual search
+	String[] word;
+	int numberOfItems;
+	int maxTrials;
+
+	JDialog resultsDialog;
+	JOptionPane resultsPane;
+	JTextArea resultsArea;
+
+	final Dimension D = new Dimension(300, 200); // experiment panel size
+
+	JPanel header;
+	JLabel title;
+	JLabel instructions;
+   JLabel s1Label;
+	JLabel s2Label;
+	JPanel s1Panel;
+	JPanel s2Panel;
+	JPanel expPanel;
+	JLabel message;
+	JPanel experiment;
+
+	JRadioButton srButton;
+	JRadioButton pmButton;
+	JRadioButton nmButton;
+	JRadioButton cmButton;
+	JRadioButton vsButton;
+	JButton clickToContinue;
+	JLabel modeLabel;
+
+	JRadioButton c1Button;
+	JRadioButton c2Button;
+	JRadioButton c4Button;
+	JRadioButton c8Button;
+	JRadioButton c16Button;
+	JRadioButton c26Button;
+
+	JComboBox participantComboBox;
+	String[] par = { "P99", "P01", "P02", "P03", "P04", "P05", 
+		"P06", "P07", "P08", "P09", "P10", 
+		"P11", "P12", "P13", "P14", "P15", 
+		"P16", "P17", "P18", "P18", "P20", 
+		"P21", "P22", "P23", "P24", "P25" };
+
+	JComboBox blockComboBox;
+	String[] block = { "practice", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8" };
+
+	Font f16 = new Font("sansserif", Font.PLAIN, 16);
+	Font f18 = new Font("sansserif", Font.PLAIN, 18);
+	
+	private long t1;
+	private long t2;
+	boolean begin = false;
+
+	int[] time;
+	char[] key;
+	int[] match;
+	int[] error;
+	int count = 0;
+	BufferedWriter bw1;
+	BufferedWriter bw2;
+	String mode;
+	String participantCode = par[0];;
+	String blockCode = block[0];
+
+   // -----------
+   // constructor
+   // -----------
+
+   public ReactionTimeExpFrame(int maxTrialsArg)
+   {
+      // --------------------------------------
+      // declare and initialize local variables
+      // --------------------------------------
+
+		maxTrials = maxTrialsArg;
+		time = new int[maxTrials];
+		key = new char[maxTrials];
+		match = new int[maxTrials];
+		error = new int[maxTrials];
+
+		String modeInstructions = "";
+
+      // -------------------------------
+      // create and configure components
+      // -------------------------------
+
+		sr = new SRDialog(this); // simple reaction
+		pm = new PMDialog(this); // physical matching
+		nm = new NMDialog(this); // name matcing
+		cm = new CMDialog(this); // class matching
+		// vs (visual search) is more complicated; instantiated in actionPerformed method
+
+		// read 5-letter words into array...
+		BufferedReader br = null;
+		try
+		{
+			br = new BufferedReader(new FileReader("d1-word.txt"));
+		} catch (FileNotFoundException e)
+		{
+			System.out.println("File not found: " + "d1-word.txt");
+			System.exit(0);
+		}
+		Vector<String> v = new Vector<String>();
+		String s = "";
+		try
+		{
+			while ((s = br.readLine()) != null)
+				if (s.length() == 5)
+					v.add(s);
+		} catch (IOException e)
+		{
+			System.out.println("Error reading word file!");
+			System.exit(0);
+		}
+		word = new String[v.size()];
+		v.copyInto(word);
+		// ... done
+
+		srButton = new JRadioButton("Simple Reaction");
+		pmButton = new JRadioButton("Physical Matching");
+		nmButton = new JRadioButton("Name Matching");
+		cmButton = new JRadioButton("Class Matching");
+		vsButton = new JRadioButton("Visual Search");
+
+		srButton.setActionCommand("SR");
+		pmButton.setActionCommand("PM");
+		nmButton.setActionCommand("NM");
+		cmButton.setActionCommand("CM");
+		vsButton.setActionCommand("VS");
+
+		srButton.setFont(f16);
+		pmButton.setFont(f16);
+		nmButton.setFont(f16);
+		cmButton.setFont(f16);
+		vsButton.setFont(f16);
+
+		c1Button = new JRadioButton("1");
+		c2Button = new JRadioButton("2");
+		c4Button = new JRadioButton("4");
+		c8Button = new JRadioButton("8");
+		c16Button = new JRadioButton("16");
+		c26Button = new JRadioButton("32");
+		disableNumbers();
+
+		c1Button.setFont(f16);
+		c2Button.setFont(f16);
+		c4Button.setFont(f16);
+		c8Button.setFont(f16);
+		c16Button.setFont(f16);
+		c26Button.setFont(f16);
+
+		clickToContinue = new JButton("Continue");
+		clickToContinue.setFont(new Font("sansserif", Font.PLAIN, 18));
+
+		JPanel setupPanel = new JPanel();
+		JLabel setupLabel = new JLabel("Setup");
+		setupLabel.setFont(new Font("sansserif", Font.PLAIN, 18));
+		setupPanel.add(setupLabel, SwingConstants.CENTER);
+
+		JPanel pPanel = new JPanel();
+		participantComboBox = new JComboBox(par);
+		participantComboBox.setFont(f16);
+		JLabel pc = new JLabel("Participant code: ");
+		pc.setFont(f16);
+		pPanel.add(pc);
+		pPanel.add(participantComboBox);
+
+		JPanel bPanel = new JPanel();
+		blockComboBox = new JComboBox(block);
+		blockComboBox.setFont(f16);
+		JLabel blk = new JLabel("Block: ");
+		blk.setFont(f16);
+		bPanel.add(blk);
+		bPanel.add(blockComboBox);
+
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(srButton);
+		bg.add(pmButton);
+		bg.add(nmButton);
+		bg.add(cmButton);
+		bg.add(vsButton);
+
+		ButtonGroup bg2 = new ButtonGroup();
+		bg2.add(c1Button);
+		bg2.add(c2Button);
+		bg2.add(c4Button);
+		bg2.add(c8Button);
+		bg2.add(c16Button);
+		bg2.add(c26Button);
+
+		JPanel choicesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		choicesPanel.add(c1Button);
+		choicesPanel.add(c2Button);
+		choicesPanel.add(c4Button);
+		choicesPanel.add(c8Button);
+		choicesPanel.add(c16Button);
+		choicesPanel.add(c26Button);
+		choicesPanel.add(new JLabel("    ")); // spacing kludge
+
+		JPanel radioButtonPanel = new JPanel();
+		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.Y_AXIS));
+		radioButtonPanel.add(srButton);
+		radioButtonPanel.add(pmButton);
+		radioButtonPanel.add(nmButton);
+		radioButtonPanel.add(cmButton);
+		radioButtonPanel.add(vsButton);
+		radioButtonPanel.add(choicesPanel);
+
+		title = new JLabel("Reaction Time Experiment");
+		title.setFont(new Font("sansserif", Font.PLAIN, 32));
+
+		title.setAlignmentX(Component.CENTER_ALIGNMENT);
+		setupPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		radioButtonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		clickToContinue.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+		JPanel bgPanel = new JPanel();
+		bgPanel.setLayout(new BoxLayout(bgPanel, BoxLayout.Y_AXIS));
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+		bgPanel.add(title);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+		bgPanel.add(setupPanel);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+		bgPanel.add(radioButtonPanel);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+		bgPanel.add(pPanel);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+		bgPanel.add(bPanel);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+		bgPanel.add(clickToContinue);
+		bgPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+		bgPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+		resultsArea = new JTextArea(9,20);
+		resultsArea.setFont(new Font("sansserif", Font.PLAIN, 18));
+		resultsArea.setBackground((new JButton()).getBackground());
+		resultsPane = new JOptionPane(resultsArea, JOptionPane.INFORMATION_MESSAGE);
+		resultsPane.setFont(new Font("sansserif", Font.PLAIN, 18));
+		resultsDialog = resultsPane.createDialog(this, "Information");
+
+      // -------------
+      // add listeners
+      // -------------
+
+		srButton.addActionListener(this);
+		pmButton.addActionListener(this);
+		nmButton.addActionListener(this);
+		cmButton.addActionListener(this);
+		vsButton.addActionListener(this);
+		c1Button.addActionListener(this);
+		c2Button.addActionListener(this);
+		c4Button.addActionListener(this);
+		c8Button.addActionListener(this);
+		c16Button.addActionListener(this);
+		c26Button.addActionListener(this);
+		clickToContinue.addActionListener(this);
+		participantComboBox.addActionListener(this);
+		blockComboBox.addActionListener(this);
+
+      // ------------------
+      // arrange components
+      // ------------------
+
+      // put components in a panel
+
+      JPanel panel = new JPanel();
+      panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		panel.setBackground(Color.gray);
+      panel.add(bgPanel);
+
+      // make the panel this extended JFrame's content pane
+
+      this.setContentPane(panel);
+   }
+
+   // -------------------------------
+   // implement ActionListener method
+   // -------------------------------
+
+	boolean modeSet = false;
+	boolean choicesMode = false;
+	boolean firstBlock = true; // ???
+	public void actionPerformed(ActionEvent ae)
+	{
+		Object source = ae.getSource();
+		String s = "";
+		if (source == clickToContinue)
+		{
+			if (!modeSet)
+			{
+				JLabel message = new JLabel("Please select an EXPERIMENT MODE.");
+				message.setFont(f18);
+				 JOptionPane.showMessageDialog(this, message, 
+					 "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			else if (mode.equals("VS") && !choicesMode)
+			{
+				message = new JLabel("Please select the NUMBER OF CHOICES.");
+				message.setFont(f18);
+				JOptionPane.showMessageDialog(this, message, 
+					"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			else // begin experiment
+			{
+				// First, open data files for experiment results
+				try
+				{
+					String base = "ReactionTimeExp-" + participantCode + "-" + blockCode + 
+						"-" + mode;
+					if (mode.equals("VS"))
+						base += "-" + numberOfItems;
+					bw1 = new BufferedWriter(new FileWriter(base + ".sd1"));
+					bw2 = new BufferedWriter(new FileWriter(base + ".sd2"));
+					String header = "";
+					if (mode.equals("SR"))
+						header = sr.SD2Header();
+					else if (mode.equals("PM"))
+						header = pm.SD2Header();
+					else if (mode.equals("CM"))
+						header = cm.SD2Header();
+					else if (mode.equals("VS"))
+						header = vs.SD2Header();
+					bw2.write(header, 0, header.length());
+					bw2.flush();
+				} catch (IOException e)
+				{
+					System.out.println("I/O error: can't open output data file(s)");
+					System.exit(0);
+				}
+
+				// Now, determine mode and show appropriate dialog
+				if (mode.equals("SR"))
+				{
+					int j = sr.showSRDialog(this); // Simple Reaction Time Experiment
+					
+					try
+					{
+						s = sr.SD1Results();
+						bw1.write(s, 0, s.length());
+						bw1.flush();
+						s = sr.SD2Results();
+						bw2.write(s, 0, s.length());
+						bw2.flush();
+					} catch (IOException e)
+					{
+						System.out.println("I/O error writing to output data file");
+						System.exit(0);
+					}
+					showResults(srButton.getText());
+				}
+				else if (mode.equals("PM"))
+				{
+					int j = pm.showPMDialog(this); // Physical Matching Experiment
+
+					try
+					{
+						s = pm.SD1Results();
+						bw1.write(s, 0, s.length());
+						bw1.flush();
+						s = pm.SD2Results();
+						bw2.write(s, 0, s.length());
+						bw2.flush();
+					} catch (IOException e)
+					{
+						System.out.println("I/O error writing to output data file");
+						System.exit(0);
+					}
+					showResults(pmButton.getText());
+				}
+				else if (mode.equals("NM"))
+				{
+					int j = nm.showNMDialog(this); // Name Matching Experiment
+
+					try
+					{
+						s = nm.SD1Results();
+						bw1.write(s, 0, s.length());
+						bw1.flush();
+						s = nm.SD2Results();
+						bw2.write(s, 0, s.length());
+						bw2.flush();
+					} catch (IOException e)
+					{
+						System.out.println("I/O error writing to output data file");
+						System.exit(0);
+					}
+					showResults(nmButton.getText());
+				}
+				else if (mode.equals("CM"))
+				{
+					int j = cm.showCMDialog(this); // Class Matching Experiment
+
+					try
+					{
+						s = cm.SD1Results();
+						bw1.write(s, 0, s.length());
+						bw1.flush();
+						s = cm.SD2Results();
+						bw2.write(s, 0, s.length());
+						bw2.flush();
+					} catch (IOException e)
+					{
+						System.out.println("I/O error writing to output data file");
+						System.exit(0);
+					}
+					showResults(cmButton.getText());
+				}
+				else if (mode.equals("VS"))
+				{
+					int j = vs.showVSDialog(this); // Choice Reaction Time Experiment
+
+					try
+					{
+						s = vs.SD1Results();
+						bw1.write(s, 0, s.length());
+						bw1.flush();
+						s = vs.SD2Results();
+						bw2.write(s, 0, s.length());
+						bw2.flush();
+					} catch (IOException e)
+					{
+						System.out.println("I/O error writing to output data file");
+						System.exit(0);
+					}
+					showResults(vsButton.getText());
+				}
+				else
+				{
+					JLabel message = new JLabel("Unknown EXPERIMENT MODE.");
+					message.setFont(f18);
+					 JOptionPane.showMessageDialog(this, message, 
+						 "Error", JOptionPane.ERROR_MESSAGE);
+					 return;
+				}
+			}
+		}
+		else if (source == srButton || source == pmButton || source == nmButton
+			|| source == cmButton || source == vsButton)
+		{
+			modeSet = true;
+			mode = ((JRadioButton)source).getActionCommand();
+
+			if (source == vsButton)
+				enableNumbers();
+			else
+				disableNumbers();
+		}
+		else if (source == c1Button ||
+			source == c2Button || source == c4Button || source == c8Button
+			|| source == c16Button || source == c26Button)
+		{
+			choicesMode = true;
+			numberOfItems = Integer.parseInt(((JRadioButton)source).getText());
+			vs = new VSDialog(this, numberOfItems); // visual search
+		}
+
+		else if (source == participantComboBox)
+			participantCode = (String)participantComboBox.getSelectedItem();
+		else if (source == blockComboBox)
+		{
+			blockCode = (String)blockComboBox.getSelectedItem();
+			if (blockCode.equals("1")) blockCode = "01";
+			else if (blockCode.equals("2")) blockCode = "02";
+			else if (blockCode.equals("4")) blockCode = "04";
+			else if (blockCode.equals("8")) blockCode = "08";
+		}			
+	}
+
+	void showResults(String mode)
+	{
+		resultsArea.setText("Thank you!\n\n" +
+			"  *** " + mode + " ***" + "\n" +
+			"  Mean RT = " + MyUtil.mean(time) + " ms\n" +
+			"  min = " + MyUtil.min(time) + " ms\n" +
+			"  max = " + MyUtil.max(time) + " ms\n" +
+			"  SD = " + MyUtil.formatDouble(MyUtil.sd(time), 1, 2) + " ms\n" +
+			"  Errors = " + (int)(MyUtil.mean(error) * error.length));
+		resultsDialog.setVisible(true);
+	}
+
+	void enableNumbers()
+	{
+		c1Button.setEnabled(true);
+		c2Button.setEnabled(true);
+		c4Button.setEnabled(true);
+		c8Button.setEnabled(true);
+		c16Button.setEnabled(true);
+		c26Button.setEnabled(true);
+	}
+
+	void disableNumbers()
+	{
+		c1Button.setEnabled(false);
+		c2Button.setEnabled(false);
+		c4Button.setEnabled(false);
+		c8Button.setEnabled(false);
+		c16Button.setEnabled(false);
+		c26Button.setEnabled(false);
+	}
+
+	Font getRandomFont()
+	{
+		Random r = new Random();
+		String name = r.nextBoolean() ? "monospaced" : "sansserif";
+		int style = r.nextBoolean() ? Font.PLAIN : Font.BOLD;
+		int size = r.nextBoolean() ? 18 : 20;
+		return new Font(name, style, size);
+	}
+
+	// --------------------
+	// Define inner classes
+	// --------------------
+
+	// --------------------------------------
+	// Simple Reaction Time experiment dialog
+	// --------------------------------------
+	private class SRDialog extends JDialog implements ActionListener, KeyListener
+   {
+		Timer t;
+		Random r;
+		JPanel experimentPanel;
+		JPanel stimulusPanel;
+		long t1 = 0;
+		boolean begin;
+
+		SRDialog(Frame owner)
+      {
+         super(owner, "Simple Reaction Time", true);
+         this.setResizable(false);
+         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+			t = new Timer(2000, this);
+			r = new Random();
+			begin = false;
+
+			stimulusPanel = new JPanel();
+			stimulusPanel.setBackground(Color.gray);
+			stimulusPanel.setPreferredSize(new Dimension(50, 50));
+			stimulusPanel.setMaximumSize(stimulusPanel.getPreferredSize());
+			stimulusPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+
+			experimentPanel = new JPanel();
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(200, 200));
+			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(stimulusPanel);
+			experimentPanel.add(Box.createVerticalGlue());
+
+			this.addKeyListener(this);
+
+			this.setContentPane(experimentPanel);
+			this.pack();
+		}
+
+		public int showSRDialog(Frame f)
+		{
+			count = 0;
+			stimulusPanel.setBackground(Color.gray);
+			this.setLocationRelativeTo(f);
+			t.restart();
+			begin = false; // don't think this is needed!?
+			this.setVisible(true);
+			return -1;
+		}
+
+		public void actionPerformed(ActionEvent ae)
+		{
+			//System.out.println("Action event");
+			stimulusPanel.setBackground(Color.red);
+			t1 = System.currentTimeMillis();
+			begin = true;
+		}
+
+		public void keyPressed(KeyEvent ke) 
+		{
+			//System.out.println("Key pressed event");
+			if (!begin)
+			{
+				ke.consume();
+				return;
+			}
+			time[count++] = (int)(System.currentTimeMillis() - t1);
+			if (count == maxTrials)
+			{
+				begin = false;
+				stimulusPanel.setBackground(Color.gray);
+				this.setVisible(false); // does this cause an immediate return!?
+			} else
+			{
+				t.setInitialDelay(2000 + r.nextInt(3000));
+				t.restart();
+				stimulusPanel.setBackground(Color.gray);		
+				begin = false;
+			}
+		}
+		public void keyTyped(KeyEvent ke) {}
+		public void keyReleased(KeyEvent ke) {}
+
+		public String SD1Results()
+		{
+			String s = "time";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + time[i];
+			s += "\n";
+			return s;
+		}
+
+		public String SD2Results()
+		{
+			return 
+				participantCode + "," +
+				blockCode + "," +
+				mode + "," +
+				MyUtil.mean(time) + "," +
+				MyUtil.min(time) + "," +
+				MyUtil.max(time) + "," +
+				MyUtil.sd(time);
+		}
+
+		public String SD2Header()
+		{
+			return "Participant,Block,Mode,mean,min,max,sd\n";
+		}
+	}
+
+	// -----------------------------------
+	// Physical Matching experiment dialog
+	// -----------------------------------
+	private class PMDialog extends JDialog implements ActionListener, KeyListener
+   {
+		Timer t;
+		Random r;
+		JPanel experimentPanel;
+		JLabel s1Label;
+		JLabel s2Label;
+		JPanel sPanel;
+		long t1 = 0;
+		RandomBooleanArray rba;
+
+		PMDialog(Frame owner) 
+      {
+         super(owner, "Physical Matching", true);
+         this.setResizable(false);
+         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+			rba = new RandomBooleanArray(maxTrials);
+			t = new Timer(2000, this);
+			r = new Random();
+
+			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
+			final Dimension D = new Dimension(90, 30);
+			s1Label = new JLabel("          ", SwingConstants.CENTER);
+			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s1Label.setPreferredSize(D);
+			s1Label.setMaximumSize(D);
+			s1Label.setFont(F18);
+
+			s2Label = new JLabel("          ", SwingConstants.CENTER);
+			s2Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s2Label.setPreferredSize(D);
+			s2Label.setMaximumSize(D);
+			s2Label.setFont(F18);
+
+			sPanel = new JPanel();
+			sPanel.add(s1Label);
+			sPanel.add(s2Label);
+
+			experimentPanel = new JPanel();
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(200, 200));
+			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(sPanel);
+			experimentPanel.add(Box.createVerticalGlue());
+
+			this.addKeyListener(this);
+
+			this.setContentPane(experimentPanel);
+			this.pack();
+		}
+
+		public int showPMDialog(Frame f)
+		{
+			rba.shuffle();
+			count = 0;
+			s1Label.setBackground(Color.gray);
+			this.setLocationRelativeTo(f);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			this.setVisible(true);
+			t.stop();
+			return -1;
+		}
+
+		boolean armed = false;
+		String w1 = "";
+		String w2 = "";
+		public void actionPerformed(ActionEvent ae)
+		{
+			if (!armed)
+			{
+				w1 = word[r.nextInt(word.length)];
+				s1Label.setText(w1);
+				t.setInitialDelay(2000 + r.nextInt(3000));
+				t.restart();
+				armed = true;
+			}
+			else
+			{
+				t.stop();
+				w2 = word[r.nextInt(word.length)];
+				if (rba.nextBooleanArrayEntry())
+					s2Label.setText(w1);
+				else
+					s2Label.setText(w2);
+				t1 = System.currentTimeMillis();
+			}
+		}
+
+		public void keyPressed(KeyEvent ke) 
+		{
+			time[count] = (int)(System.currentTimeMillis() - t1);
+			key[count] = Character.toLowerCase(ke.getKeyChar());
+			match[count] = s1Label.getText().equals(s2Label.getText()) ? 1 : 0;
+			error[count] = match[count] == 1 && (key[count] != 'j' && key[count] != 'f') ||
+							   match[count] == 0 && (key[count] == 'j' || key[count] == 'f')
+								? 1 : 0;
+			++count;
+			if (count == maxTrials)
+			{
+				this.setVisible(false);
+				rba = new RandomBooleanArray(maxTrials);
+			}
+
+			t.setInitialDelay(2000);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			armed = false;
+		}
+		public void keyTyped(KeyEvent ke) {}
+		public void keyReleased(KeyEvent ke) {}
+
+		public String SD1Results()
+		{
+			String s = "";
+			s += "time";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + time[i];
+			s += "\n";
+			s += "keys,";
+			for (int i = 0; i < time.length; ++i)
+				s += key[i] + ",";
+			s += "\n";
+			s += "matches,";
+			for (int i = 0; i < time.length; ++i)
+				s += match[i] + ",";
+			s += "\n";
+			s += "errors,";
+			for (int i = 0; i < time.length; ++i)
+				s += error[i] + ",";
+			s += "\n";
+			return s;
+		}
+
+		public String SD2Results()
+		{
+			double meanMatchTime = 0.0;
+			double meanNoMatchTime = 0.0;
+			int nMatch = 0;
+			int nNoMatch = 0;
+			int nMatchError = 0;
+			int nNoMatchError = 0;
+			for (int i = 0; i < time.length; ++i)
+			{
+				if (match[i] == 1) // match
+				{
+					if (error[i] == 0)
+					{
+						meanMatchTime += time[i];
+						++nMatch;
+					} else
+						++nMatchError;
+				} 
+				else // no match
+				{
+					if (error[i] == 0)
+					{
+						meanNoMatchTime += time[i];
+						++nNoMatch;
+					} else
+						++nNoMatchError;
+				}
+			}
+			meanMatchTime /= nMatch;
+			meanNoMatchTime /= nNoMatch;
+
+			return 
+				participantCode + "," +
+				blockCode + "," +
+				mode + "," +
+				meanMatchTime + "," + 
+				nMatch + "," +
+				nMatchError + "," +
+				meanNoMatchTime + "," +
+				nNoMatch + "," +
+				nNoMatchError;
+		}
+		public String SD2Header()
+		{
+			return "Participant,Block,Mode,RT_match,n_match,error_match," +
+				    "RT_no-match,n_no-match,error_no-match\n";
+		}
+	}
+
+	// -------------------------------
+	// Name Matching experiment dialog
+	// -------------------------------
+	private class NMDialog extends JDialog implements ActionListener, KeyListener
+   {
+		Timer t;
+		Random r;
+		JPanel experimentPanel;
+		JLabel s1Label;
+		JLabel s2Label;
+		JPanel sPanel;
+		long t1 = 0;
+		RandomBooleanArray rba;
+
+		NMDialog(Frame owner) 
+      {
+         super(owner, "Name Matching", true);
+         this.setResizable(false);
+         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+			t = new Timer(2000, this);
+			r = new Random();
+			rba = new RandomBooleanArray(maxTrials);
+
+			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
+			final Dimension D = new Dimension(90, 30);
+			s1Label = new JLabel("          ", SwingConstants.CENTER);
+			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s1Label.setPreferredSize(D);
+			s1Label.setMaximumSize(D);
+			s1Label.setFont(F18);
+
+			s2Label = new JLabel("          ", SwingConstants.CENTER);
+			s2Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s2Label.setPreferredSize(D);
+			s2Label.setMaximumSize(D);
+			s2Label.setFont(F18);
+
+			sPanel = new JPanel();
+			sPanel.add(s1Label);
+			sPanel.add(s2Label);
+
+			experimentPanel = new JPanel();
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(200, 200));
+			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(sPanel);
+			experimentPanel.add(Box.createVerticalGlue());
+
+			this.addKeyListener(this);
+			this.setContentPane(experimentPanel);
+			this.pack();
+		}
+
+		public int showNMDialog(Frame f)
+		{
+			rba.shuffle();
+			count = 0;
+			s1Label.setBackground(Color.gray);
+			this.setLocationRelativeTo(f);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			this.setVisible(true);
+			t.stop();
+			return -1;
+		}
+
+		boolean armed = false;
+		String w1 = "";
+		String w2 = "";
+		public void actionPerformed(ActionEvent ae)
+		{
+			if (!armed)
+			{
+				w1 = word[r.nextInt(word.length)];
+				if (r.nextBoolean()) w1 = w1.toUpperCase();
+				s1Label.setFont(getRandomFont());
+				s1Label.setText(w1);
+				t.setInitialDelay(2000 + r.nextInt(3000)); // 2 to 5 seconds delay
+				t.restart();
+				armed = true;
+			}
+			else
+			{
+				t.stop();
+
+				// randomize word, case, font (family, style, size)
+				w2 = word[r.nextInt(word.length)];
+				if (r.nextBoolean()) w2 = w2.toUpperCase();
+				s2Label.setFont(getRandomFont());
+
+				if (rba.nextBooleanArrayEntry())
+					s2Label.setText(w1);
+				else
+					s2Label.setText(w2);
+				t1 = System.currentTimeMillis();
+			}
+		}
+
+		public void keyPressed(KeyEvent ke) 
+		{
+			time[count] = (int)(System.currentTimeMillis() - t1);
+			key[count] = Character.toLowerCase(ke.getKeyChar());
+			match[count] = s1Label.getText().equals(s2Label.getText()) ? 1 : 0;
+			error[count] = match[count] == 1 && (key[count] != 'j' && key[count] != 'f') ||
+							   match[count] == 0 && (key[count] == 'j' || key[count] == 'f')
+								? 1 : 0;
+			++count;
+			if (count == maxTrials)
+			{
+				this.setVisible(false);
+				rba = new RandomBooleanArray(maxTrials);
+			}
+
+			t.setInitialDelay(2000);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			armed = false;
+		}
+		public void keyTyped(KeyEvent ke) {}
+		public void keyReleased(KeyEvent ke) {}
+
+		public String SD1Results()
+		{
+			String s = "";
+			s += "time";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + time[i];
+			s += "\n";
+			s += "keys,";
+			for (int i = 0; i < time.length; ++i)
+				s += key[i] + ",";
+			s += "\n";
+			s += "matches,";
+			for (int i = 0; i < time.length; ++i)
+				s += match[i] + ",";
+			s += "\n";
+			s += "errors,";
+			for (int i = 0; i < time.length; ++i)
+				s += error[i] + ",";
+			s += "\n";
+			return s;
+		}
+
+		public String SD2Results()
+		{
+			double meanMatchTime = 0.0;
+			double meanNoMatchTime = 0.0;
+			int nMatch = 0;
+			int nNoMatch = 0;
+			int nMatchError = 0;
+			int nNoMatchError = 0;
+			for (int i = 0; i < time.length; ++i)
+			{
+				if (match[i] == 1) // match
+				{
+					if (error[i] == 0)
+					{
+						meanMatchTime += time[i];
+						++nMatch;
+					} else
+						++nMatchError;
+				} 
+				else // no match
+				{
+					if (error[i] == 0)
+					{
+						meanNoMatchTime += time[i];
+						++nNoMatch;
+					} else
+						++nNoMatchError;
+				}
+			}
+			meanMatchTime /= nMatch;
+			meanNoMatchTime /= nNoMatch;
+
+			return 
+				participantCode + "," +
+				blockCode + "," +
+				mode + "," +
+				meanMatchTime + "," + 
+				nMatch + "," +
+				nMatchError + "," +
+				meanNoMatchTime + "," +
+				nNoMatch + "," +
+				nNoMatchError;
+		}
+		public String SD2Header()
+		{
+			return "Participant,Block,Mode,RT_match,n_match,error_match," +
+				    "RT_no-match,n_no-match,error_no-match\n";
+		}
+	}
+
+	// --------------------------------
+	// Class Matching experiment dialog
+	// --------------------------------
+	private class CMDialog extends JDialog implements ActionListener, KeyListener
+   {
+		Timer t;
+		Random r;
+		JPanel experimentPanel;
+		JLabel s1Label;
+		JLabel s2Label;
+		JPanel sPanel;
+		long t1 = 0;
+		RandomBooleanArray rba;
+
+		CMDialog(Frame owner) 
+      {
+         super(owner, "Class Matching", true);
+         this.setResizable(false);
+         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+			t = new Timer(2000, this);
+			r = new Random();
+			rba = new RandomBooleanArray(maxTrials);
+
+			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
+			final Dimension D = new Dimension(30, 30);
+			s1Label = new JLabel("  ", SwingConstants.CENTER);
+			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s1Label.setPreferredSize(D);
+			s1Label.setMaximumSize(D);
+			s1Label.setFont(F18);
+
+			s2Label = new JLabel("  ", SwingConstants.CENTER);
+			s2Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s2Label.setPreferredSize(D);
+			s2Label.setMaximumSize(D);
+			s2Label.setFont(F18);
+
+			sPanel = new JPanel();
+			sPanel.add(s1Label);
+			sPanel.add(s2Label);
+
+			experimentPanel = new JPanel();
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(200, 200));
+			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(sPanel);
+			experimentPanel.add(Box.createVerticalGlue());
+
+			this.addKeyListener(this);
+			this.setContentPane(experimentPanel);
+			this.pack();
+		}
+
+		public int showCMDialog(Frame f)
+		{
+			rba.shuffle();
+			count = 0;			
+			s1Label.setBackground(Color.gray);
+			s2Label.setText("");
+			this.setLocationRelativeTo(f);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			this.setVisible(true);
+			t.stop();
+			return -1;
+		}
+
+		boolean armed = false;
+		char c1;
+		char c2;
+		String letters = "ABCDEFGHJKLNMPQRSTUVWXWZ"; // "I" and "O" omitted
+		String numbers = "23456789"; // "0" and "1" omitted
+
+		boolean matchMode;
+		boolean letterMode;
+
+		public void actionPerformed(ActionEvent ae)
+		{
+			if (!armed)
+			{
+				matchMode = rba.nextBooleanArrayEntry();  // 50% matches, 50% no-matches
+				letterMode = r.nextBoolean();
+
+				if (letterMode)
+					c1 = letters.charAt(r.nextInt(letters.length()));
+				else
+					c1 = numbers.charAt(r.nextInt(numbers.length()));
+				s1Label.setFont(getRandomFont());
+				s1Label.setText("" + c1);
+				t.setInitialDelay(2000 + r.nextInt(3000));
+				t.restart();
+				armed = true;
+			}
+			else
+			{
+				t.stop();
+
+				if (matchMode)
+					if (letterMode)
+						c2 = letters.charAt(r.nextInt(letters.length()));
+					else
+						c2 = numbers.charAt(r.nextInt(numbers.length()));
+				else
+					if	(letterMode)
+						c2 = numbers.charAt(r.nextInt(numbers.length()));
+					else
+						c2 = letters.charAt(r.nextInt(letters.length()));
+				s2Label.setFont(getRandomFont());
+				s2Label.setText("" + c2);
+				t1 = System.currentTimeMillis();
+			}
+		}
+
+		public void keyPressed(KeyEvent ke) 
+		{
+			time[count] = (int)(System.currentTimeMillis() - t1);
+			key[count] = Character.toLowerCase(ke.getKeyChar());
+			match[count] = 
+				(letters.indexOf(s1Label.getText()) >= 0 &&
+				 letters.indexOf(s2Label.getText()) >= 0 ||
+				 numbers.indexOf(s1Label.getText()) >= 0 &&
+				 numbers.indexOf(s2Label.getText()) >= 0) ? 1 : 0;
+				
+			error[count] = match[count] == 1 && (key[count] != 'j' && key[count] != 'f') ||
+							   match[count] == 0 && (key[count] == 'j' || key[count] == 'f')
+								? 1 : 0;
+			++count;
+			if (count == maxTrials)
+			{
+				this.setVisible(false);
+				rba = new RandomBooleanArray(maxTrials);
+			}
+
+			t.setInitialDelay(2000);
+			t.restart();
+			s1Label.setText("");
+			s2Label.setText("");
+			armed = false;
+		}
+		public void keyTyped(KeyEvent ke) {}
+		public void keyReleased(KeyEvent ke) {}
+
+		public String SD1Results()
+		{
+			String s = "";
+			s += "time";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + time[i];
+			s += "\n";
+			s += "keys";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + key[i];
+			s += "\n";
+			s += "matches";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + match[i];
+			s += "\n";
+			s += "errors";
+			for (int i = 0; i < time.length; ++i)
+				s += "," + error[i];
+			s += "\n";
+			return s;
+		}
+
+		public String SD2Results()
+		{
+			double meanMatchTime = 0.0;
+			double meanNoMatchTime = 0.0;
+			int nMatch = 0;
+			int nNoMatch = 0;
+			int nMatchError = 0;
+			int nNoMatchError = 0;
+			for (int i = 0; i < time.length; ++i)
+			{
+				if (match[i] == 1) // match
+				{
+					if (error[i] == 0)
+					{
+						meanMatchTime += time[i];
+						++nMatch;
+					} else
+						++nMatchError;
+				} 
+				else // no match
+				{
+					if (error[i] == 0)
+					{
+						meanNoMatchTime += time[i];
+						++nNoMatch;
+					} else
+						++nNoMatchError;
+				}
+			}
+			meanMatchTime /= nMatch;
+			meanNoMatchTime /= nNoMatch;
+
+			return 
+				participantCode + "," +
+				blockCode + "," +
+				mode + "," +
+				meanMatchTime + "," + 
+				nMatch + "," +
+				nMatchError + "," +
+				meanNoMatchTime + "," +
+				nNoMatch + "," +
+				nNoMatchError;
+		}
+		public String SD2Header()
+		{
+			return "Participant,Block,Mode,RT_match,n_match,error_match," +
+				    "RT_no-match,n_no-match,error_no-match\n";
+		}
+	}
+
+	// ------------------------------------
+	// Visual Search Time experiment dialog
+	// ------------------------------------
+	private class VSDialog extends JDialog implements ActionListener, KeyListener
+   {
+		Timer t;
+		Random r;
+		JPanel experimentPanel;
+		JLabel s1Label;
+		JLabel[] s2Label;
+		JPanel sPanel;
+		long t1 = 0;
+		int numberOfItems;
+		RandomBooleanArray rba;
+
+		VSDialog(Frame owner, int numberOfChoicesArg) 
+      {
+         super(owner, "Visual Search", true);
+			numberOfItems = numberOfChoicesArg;
+         this.setResizable(false);
+         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+			t = new Timer(2000, this);
+			r = new Random();
+			rba = new RandomBooleanArray(maxTrials);
+
+			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
+			final Dimension D = new Dimension(30, 30);
+			s1Label = new JLabel(" ", SwingConstants.CENTER);
+			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
+			s1Label.setPreferredSize(D);
+			s1Label.setMaximumSize(D);
+			s1Label.setFont(F18);
+
+			s2Label = new JLabel[numberOfItems];
+			JPanel s2Panel = null;
+			if (numberOfItems == 1)
+				s2Panel = new JPanel(new GridLayout(1, 1));
+			else if (numberOfItems == 2)
+				s2Panel = new JPanel(new GridLayout(2, 1));
+			else if (numberOfItems == 4)
+				s2Panel = new JPanel(new GridLayout(2, 2));
+			else if (numberOfItems == 8)
+				s2Panel = new JPanel(new GridLayout(2, 4));
+			else if (numberOfItems == 16)
+				s2Panel = new JPanel(new GridLayout(4, 4));
+			else if (numberOfItems == 32)
+				s2Panel = new JPanel(new GridLayout(4, 8));
+
+			for (int i = 0; i < s2Label.length; ++i)
+			{
+				s2Label[i] = new JLabel(" ", SwingConstants.CENTER);
+				s2Label[i].setBorder(BorderFactory.createLineBorder(Color.gray));
+				s2Label[i].setPreferredSize(D);
+				s2Label[i].setMaximumSize(D);
+				s2Label[i].setFont(F18);
+				s2Panel.add(s2Label[i]);
+			}
+
+			sPanel = new JPanel();
+			sPanel.add(s1Label);
+			sPanel.add(s2Panel);
+
+			experimentPanel = new JPanel();
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(300, 300));
+			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+			experimentPanel.add(Box.createVerticalGlue()); // kludge spacing
+			experimentPanel.add(Box.createVerticalGlue());
+			experimentPanel.add(sPanel);
+			experimentPanel.add(Box.createVerticalGlue());
+
+			this.addKeyListener(this);
+			this.setContentPane(experimentPanel);
+			this.pack();
+		}
+
+		public int showVSDialog(Frame f)
+		{
+			rba.shuffle();
+			count = 0;
+			s1Label.setBackground(Color.gray);
+			for (int i = 0; i < s2Label.length; ++i)
+				s2Label[i].setText("");
+			this.setLocationRelativeTo(f);
+			t.restart(); // !!!
+			s1Label.setText("");
+			for (int i = 0; i < numberOfItems; ++i)
+				s2Label[i].setText("");
+			this.setVisible(true);
+			t.stop();
+			return -1;
+		}
+
+		boolean armed = false;
+		boolean matchMode = false;
+		String c1 = "";
+		public void actionPerformed(ActionEvent ae)
+		{
+			if (!armed)
+			{
+				matchMode = rba.nextBooleanArrayEntry();
+				c1 = Character.toString((char)('A' + r.nextInt(26)));
+				s1Label.setText(c1);
+				t.setInitialDelay(2000 + r.nextInt(3000));
+				t.restart();
+				armed = true;
+			}
+			else
+			{
+				t.stop();
+				// location of match random (but, of course, no-match 50% of time)
+				int location = r.nextInt(numberOfItems);
+				for (int i = 0; i < numberOfItems; ++i)
+				{
+					// choose second stimulus at random
+					String c2 = Character.toString((char)('A' + r.nextInt(26)));
+					// ensure second stimulus != first stimulus
+					while (c2.equals(c1))
+						c2 = Character.toString((char)('A' + r.nextInt(26)));
+					if (matchMode && location == i)
+						s2Label[i].setText(c1);
+					else
+						s2Label[i].setText(c2);
+				}
+				t1 = System.currentTimeMillis();
+			}
+		}
+
+		public void keyPressed(KeyEvent ke) 
+		{
+			time[count] = (int)(System.currentTimeMillis() - t1);
+			key[count] = Character.toLowerCase(ke.getKeyChar());
+			match[count] = matchMode ? 1 : 0;
+			error[count] = matchMode &&  (key[count] != 'j' && key[count] != 'f') ||
+							   !matchMode && (key[count] == 'j' || key[count] == 'f')
+								? 1 : 0;
+			++count;
+			if (count == maxTrials)
+			{
+				this.setVisible(false);
+				rba = new RandomBooleanArray(maxTrials);
+			}
+
+			t.setInitialDelay(2000);
+			t.restart();
+			s1Label.setText("");
+			for (int i = 0; i < numberOfItems; ++i)
+				s2Label[i].setText("");
+			armed = false;
+		}
+		public void keyTyped(KeyEvent ke) {}
+		public void keyReleased(KeyEvent ke) {}
+
+		public String SD1Results()
+		{
+			String s = "";
+			s += "times,";
+			for (int i = 0; i < time.length; ++i)
+				s += time[i] + ",";
+			s += "\n";
+			s += "keys,";
+			for (int i = 0; i < time.length; ++i)
+				s += key[i] + ",";
+			s += "\n";
+			s += "match,";
+			for (int i = 0; i < time.length; ++i)
+				s += match[i] + ",";
+			s += "\n";
+			s += "errors,";
+			for (int i = 0; i < time.length; ++i)
+				s += error[i] + ",";
+			s += "\n";
+			return s;
+		}
+
+		public String SD2Results()
+		{
+			double totalTime = 0.0;
+			int totalErrors = 0;
+			double totalMatchTime = 0.0;
+			int nMatch = 0;
+			int nMatchErrors = 0;
+			double totalNoMatchTime = 0.0;
+			int nNoMatch = 0;
+			int nNoMatchErrors = 0;
+
+			for (int i = 0; i < time.length; ++i)
+			{
+				totalTime += time[i];
+				totalErrors += error[i];
+				if (match[i] == 1)
+				{
+					totalMatchTime += time[i];
+					++nMatch;
+					nMatchErrors += error[i];
+				} else
+				{
+					totalNoMatchTime += time[i];
+					++nNoMatch;
+					nNoMatchErrors += error[i];
+				}
+			}
+
+			return 
+				participantCode + "," +
+				blockCode + "," +
+				mode + "," +
+				numberOfItems + "," +
+				totalTime + "," +
+				totalErrors + "," +
+				totalMatchTime + "," +
+				nMatch + "," +
+				nMatchErrors + "," +
+				totalNoMatchTime + "," +
+				nNoMatch + "," +
+				nNoMatchErrors;
+		}
+
+		public String SD2Header()
+		{
+			return "Participant,Block,Mode,Number_of_Items," +
+				"total_time,total_errors," +
+				"total_match_time,n_match,n_match_errors," +
+				"total_no-match_time,n_no-match,n_no-match_errors\n";
+		}
+	}
+
+	private class RandomBooleanArray
+	{
+		int size;
+		boolean[] booleanArray;
+		int nextCounter;
+		RandomBooleanArray(int sizeArg)
+		{
+			size = sizeArg;
+			booleanArray = new boolean[size];
+
+			// create boolean array; 50% = false, 50% = true
+			for (int i = 0; i < size; ++i)
+				booleanArray[i] = i < size / 2 ? false : true;
+			shuffle();
+			nextCounter = 0;
+		}
+
+		// shuffle entries in array (still 50% false, 50% true)
+		void shuffle()
+		{
+			Random r = new Random();
+			for (int i = 0; i < size / 2; ++i) // size must be even!
+			{
+				if (r.nextBoolean())
+				{
+					boolean temp = booleanArray[i];
+					booleanArray[i] = booleanArray[i + size / 2];
+					booleanArray[i + size / 2] = temp;
+				}
+			}
+			//System.out.print("Shuffle: ");
+			//for (int i = 0; i < size; ++i)
+			//	System.out.print(booleanArray[i] + " ");
+			//System.out.println();
+			return;
+		}	
+
+		boolean nextBooleanArrayEntry()
+		{
+			return booleanArray[nextCounter++];
+		}
+	}
+}
