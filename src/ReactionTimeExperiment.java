@@ -1,12 +1,19 @@
-package src;
 
+import sun.audio.*;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.Timer;
 
+import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
+import java.net.URL;
+
 import javax.swing.border.*;
 
 
@@ -466,6 +473,7 @@ class ReactionTimeExpFrame extends JFrame
                     randomNum = randInt(0,1);
                     if (!begin)
                     {
+                        numberOfErrors++;
                         ke.consume();
                         return;
                     }
@@ -514,6 +522,7 @@ class ReactionTimeExpFrame extends JFrame
                     randomNum = randInt(0,1);
                     if (!begin)
                     {
+                        numberOfErrors++;
                         ke.consume();
                         return;
                     }
@@ -656,6 +665,7 @@ class ReactionTimeExpFrame extends JFrame
                     randomNum = randInt(0,1);
         			if (!begin)
         			{
+        			    numberOfErrors++;
         				ke.consume();
         				return;
         			}
@@ -673,6 +683,29 @@ class ReactionTimeExpFrame extends JFrame
         				begin = false;
         			}
     		    }
+    		    else if (ke.getKeyCode() == KeyEvent.VK_LEFT ) {
+    		        numberOfErrors++;
+                    randomNum = randInt(0,1);
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        leftStimulusPanel.setBackground(Color.gray);
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(2000 + r.nextInt(3000));
+                        t.restart();
+                        leftStimulusPanel.setBackground(Color.gray);
+                        begin = false;
+                    }
+    		    }
 		    }
 		    
 		    else if (randomNum == 1) {
@@ -681,6 +714,7 @@ class ReactionTimeExpFrame extends JFrame
                     // System.out.println("Key pressed event");
                     if (!begin)
                     {
+                        numberOfErrors++;
                         ke.consume();
                         return;
                     }
@@ -693,6 +727,29 @@ class ReactionTimeExpFrame extends JFrame
                     } else
                     {
                         t.setInitialDelay(1000 + r.nextInt(1000));
+                        t.restart();
+                        rightStimulusPanel.setBackground(Color.DARK_GRAY);
+                        begin = false;
+                    }
+                }
+                else if (ke.getKeyCode() == KeyEvent.VK_RIGHT ) {
+                    numberOfErrors++;
+                    randomNum = randInt(0,1);
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        rightStimulusPanel.setBackground(Color.DARK_GRAY);
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(2000 + r.nextInt(3000));
                         t.restart();
                         rightStimulusPanel.setBackground(Color.DARK_GRAY);
                         begin = false;
@@ -741,122 +798,178 @@ class ReactionTimeExpFrame extends JFrame
 		Timer t;
 		Random r;
 		JPanel experimentPanel;
-		JLabel s1Label;
-		JLabel s2Label;
-		JPanel sPanel;
+
+
+	    
 		long t1 = 0;
-		RandomBooleanArray rba;
+		boolean begin;
+		int randomNum = randInt(0,1);
 
 		NMDialog(Frame owner)
 		{
-			super(owner, "Name Matching", true);
+			super(owner, "Standard Audio", true);
 			this.setResizable(false);
 			this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			this.getContentPane().setLayout(null);
 
 			t = new Timer(2000, this);
 			r = new Random();
-			rba = new RandomBooleanArray(maxTrials);
+			begin = false;
+			
+			
+			
 
-			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
-			final Dimension D = new Dimension(90, 30);
-			s1Label = new JLabel("          ", SwingConstants.CENTER);
-			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
-			s1Label.setPreferredSize(D);
-			s1Label.setMaximumSize(D);
-			s1Label.setFont(F18);
-
-			s2Label = new JLabel("          ", SwingConstants.CENTER);
-			s2Label.setBorder(BorderFactory.createLineBorder(Color.gray));
-			s2Label.setPreferredSize(D);
-			s2Label.setMaximumSize(D);
-			s2Label.setFont(F18);
-
-			sPanel = new JPanel();
-			sPanel.add(s1Label);
-			sPanel.add(s2Label);
-
-			experimentPanel = new JPanel();
-			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
-			experimentPanel.setPreferredSize(new Dimension(200, 200));
+   
+			experimentPanel = new JPanel( new BorderLayout() );
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.X_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(600, 600));
 			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
 			experimentPanel.add(Box.createVerticalGlue());
 			experimentPanel.add(Box.createVerticalGlue());
-			experimentPanel.add(sPanel);
-			experimentPanel.add(Box.createVerticalGlue());
-
+			
 			this.addKeyListener(this);
+
 			this.setContentPane(experimentPanel);
 			this.pack();
 		}
 
 		public int showNMDialog(Frame f)
 		{
-			rba.shuffle();
 			count = 0;
-			s1Label.setBackground(Color.gray);
 			this.setLocationRelativeTo(f);
 			t.restart();
-			s1Label.setText("");
-			s2Label.setText("");
+			begin = false; // don't think this is needed!?
 			this.setVisible(true);
-			t.stop();
 			return -1;
 		}
 
-		boolean armed = false;
-		String w1 = "";
-		String w2 = "";
-
 		public void actionPerformed(ActionEvent ae)
 		{
-			if (!armed)
-			{
-				w1 = word[r.nextInt(word.length)];
-				if (r.nextBoolean())
-					w1 = w1.toUpperCase();
-				s1Label.setFont(getRandomFont());
-				s1Label.setText(w1);
-				t.setInitialDelay(2000 + r.nextInt(3000)); // 2 to 5 seconds delay
-				t.restart();
-				armed = true;
-			} else
-			{
-				t.stop();
-
-				// randomize word, case, font (family, style, size)
-				w2 = word[r.nextInt(word.length)];
-				if (r.nextBoolean())
-					w2 = w2.toUpperCase();
-				s2Label.setFont(getRandomFont());
-
-				if (rba.nextBooleanArrayEntry())
-					s2Label.setText(w1);
-				else
-					s2Label.setText(w2);
-				t1 = System.currentTimeMillis();
-			}
+			InputStream in;
+			if (randomNum == 0){
+				try {
+					in = new FileInputStream(new File("C:\\Users\\ADMIN\\Desktop\\New Workspace\\4HC3Research\\src\\Left.wav"));
+					AudioStream audios = new AudioStream(in);
+					AudioPlayer.player.start(audios);
+				    Thread.sleep(1000);
+					AudioPlayer.player.stop(audios);
+				}
+				catch(Exception e) {
+					JOptionPane.showMessageDialog(null,e);
+				}
+    			// System.out.println("Action event");
+    			t1 = System.currentTimeMillis();
+    			begin = true;
+		    }
+		    else if (randomNum == 1){
+				try {
+					in = new FileInputStream(new File("C:\\Users\\ADMIN\\Desktop\\New Workspace\\4HC3Research\\src\\Right.wav"));
+					AudioStream audios = new AudioStream(in);
+					AudioPlayer.player.start(audios);
+				    Thread.sleep(1000);
+					AudioPlayer.player.stop(audios);
+				}
+				catch(Exception e) {
+					JOptionPane.showMessageDialog(null,e);
+				}
+		        t1 = System.currentTimeMillis();
+		        begin = true;
+		    }
 		}
 
 		public void keyPressed(KeyEvent ke)
 		{
-			time[count] = (int)(System.currentTimeMillis() - t1);
-			key[count] = Character.toLowerCase(ke.getKeyChar());
-			match[count] = s1Label.getText().equals(s2Label.getText()) ? 1 : 0;
-			error[count] = match[count] == 1 && (key[count] != 'j' && key[count] != 'f') || match[count] == 0
-					&& (key[count] == 'j' || key[count] == 'f') ? 1 : 0;
-			++count;
-			if (count == maxTrials)
-			{
-				this.setVisible(false);
-				rba = new RandomBooleanArray(maxTrials);
-			}
-
-			t.setInitialDelay(2000);
-			t.restart();
-			s1Label.setText("");
-			s2Label.setText("");
-			armed = false;
+		    if (randomNum == 0) {
+    		    if (ke.getKeyCode() == KeyEvent.VK_LEFT ) {
+        			// System.out.println("Key pressed event");
+                    randomNum = randInt(0,1);
+        			if (!begin)
+        			{
+        			    numberOfErrors++;
+        				ke.consume();
+        				return;
+        			}
+        			time[count++] = (int)(System.currentTimeMillis() - t1);
+        			if (count == maxTrials)
+        			{
+        				begin = false;
+        				this.setVisible(false); // does this cause an immediate return!?
+        			} else
+        			{
+        				t.setInitialDelay(2000 + r.nextInt(5000));
+        				t.restart();
+        				begin = false;
+        			}
+    		    }
+    		    else if (ke.getKeyCode() == KeyEvent.VK_RIGHT ) {
+    		        numberOfErrors++;
+                    randomNum = randInt(0,1);
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(2000 + r.nextInt(5000));
+                        t.restart();
+                        begin = false;
+                    }
+    		    }
+		    }
+		    
+		    else if (randomNum == 1) {
+                if (ke.getKeyCode() == KeyEvent.VK_RIGHT ) {
+                    randomNum = randInt(0,1);
+                    // System.out.println("Key pressed event");
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(2000 + r.nextInt(5000));
+                        t.restart();
+                        begin = false;
+                    }
+                }
+                else if (ke.getKeyCode() == KeyEvent.VK_LEFT ) {
+                    numberOfErrors++;
+                    randomNum = randInt(0,1);
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(2000 + r.nextInt(5000));
+                        t.restart();
+                        begin = false;
+                    }
+                }
+            }
 		}
+
 
 		public void keyTyped(KeyEvent ke)
 		{
@@ -868,69 +981,24 @@ class ReactionTimeExpFrame extends JFrame
 
 		public String SD1Results()
 		{
-			String s = "";
-			s += "time";
+			String s = "time";
 			for (int i = 0; i < time.length; ++i)
 				s += "," + time[i];
-			s += "\n";
-			s += "keys,";
-			for (int i = 0; i < time.length; ++i)
-				s += key[i] + ",";
-			s += "\n";
-			s += "matches,";
-			for (int i = 0; i < time.length; ++i)
-				s += match[i] + ",";
-			s += "\n";
-			s += "errors,";
-			for (int i = 0; i < time.length; ++i)
-				s += error[i] + ",";
 			s += "\n";
 			return s;
 		}
 
 		public String SD2Results()
 		{
-			double meanMatchTime = 0.0;
-			double meanNoMatchTime = 0.0;
-			int nMatch = 0;
-			int nNoMatch = 0;
-			int nMatchError = 0;
-			int nNoMatchError = 0;
-			for (int i = 0; i < time.length; ++i)
-			{
-				if (match[i] == 1) // match
-				{
-					if (error[i] == 0)
-					{
-						meanMatchTime += time[i];
-						++nMatch;
-					} else
-						++nMatchError;
-				} else
-				// no match
-				{
-					if (error[i] == 0)
-					{
-						meanNoMatchTime += time[i];
-						++nNoMatch;
-					} else
-						++nNoMatchError;
-				}
-			}
-			meanMatchTime /= nMatch;
-			meanNoMatchTime /= nNoMatch;
-
-			return participantCode + "," + blockCode + "," + mode + "," + meanMatchTime + "," + nMatch + ","
-					+ nMatchError + "," + meanNoMatchTime + "," + nNoMatch + "," + nNoMatchError;
+			return String.format("%s,%s,%s,%f,%d,%d,%f,%d", participantCode, blockCode, mode, mean(time), min(time),
+					max(time), sd(time), numberOfErrors);			
 		}
 
-		@SuppressWarnings("unused")
 		public String SD2Header()
 		{
-			return "Participant,Block,Mode,RT_match,n_match,error_match," + "RT_no-match,n_no-match,error_no-match\n";
+			return "Participant,Block,Mode,mean,min,max,sd,numberOfErrors\n";
 		}
 	}
-
 	// --------------------------------
 	// Class Matching experiment dialog
 	// --------------------------------
@@ -941,136 +1009,173 @@ class ReactionTimeExpFrame extends JFrame
 		Timer t;
 		Random r;
 		JPanel experimentPanel;
-		JLabel s1Label;
-		JLabel s2Label;
-		JPanel sPanel;
 		long t1 = 0;
-		RandomBooleanArray rba;
+		boolean begin;
+		int randomNum = randInt(0,1);
 
 		CMDialog(Frame owner)
 		{
-			super(owner, "Class Matching", true);
+			super(owner, "Simple Reaction Time", true);
 			this.setResizable(false);
 			this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			this.getContentPane().setLayout(null);
 
 			t = new Timer(2000, this);
 			r = new Random();
-			rba = new RandomBooleanArray(maxTrials);
-
-			final Font F18 = new Font("sansserif", Font.PLAIN, 18);
-			final Dimension D = new Dimension(30, 30);
-			s1Label = new JLabel("  ", SwingConstants.CENTER);
-			s1Label.setBorder(BorderFactory.createLineBorder(Color.gray));
-			s1Label.setPreferredSize(D);
-			s1Label.setMaximumSize(D);
-			s1Label.setFont(F18);
-
-			s2Label = new JLabel("  ", SwingConstants.CENTER);
-			s2Label.setBorder(BorderFactory.createLineBorder(Color.gray));
-			s2Label.setPreferredSize(D);
-			s2Label.setMaximumSize(D);
-			s2Label.setFont(F18);
-
-			sPanel = new JPanel();
-			sPanel.add(s1Label);
-			sPanel.add(s2Label);
-
-			experimentPanel = new JPanel();
-			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.Y_AXIS));
-			experimentPanel.setPreferredSize(new Dimension(200, 200));
+			begin = false;
+			
+			experimentPanel = new JPanel( new BorderLayout() );
+			experimentPanel.setLayout(new BoxLayout(experimentPanel, BoxLayout.X_AXIS));
+			experimentPanel.setPreferredSize(new Dimension(600, 600));
 			experimentPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
 			experimentPanel.add(Box.createVerticalGlue());
 			experimentPanel.add(Box.createVerticalGlue());
-			experimentPanel.add(sPanel);
-			experimentPanel.add(Box.createVerticalGlue());
-
+			
 			this.addKeyListener(this);
+
 			this.setContentPane(experimentPanel);
 			this.pack();
 		}
 
 		public int showCMDialog(Frame f)
 		{
-			rba.shuffle();
 			count = 0;
-			s1Label.setBackground(Color.gray);
-			s2Label.setText("");
 			this.setLocationRelativeTo(f);
 			t.restart();
-			s1Label.setText("");
-			s2Label.setText("");
+			begin = false; // don't think this is needed!?
 			this.setVisible(true);
-			t.stop();
 			return -1;
 		}
 
-		boolean armed = false;
-		char c1;
-		char c2;
-		String letters = "ABCDEFGHJKLNMPQRSTUVWXWZ"; // "I" and "O" omitted
-		String numbers = "23456789"; // "0" and "1" omitted
-
-		boolean matchMode;
-		boolean letterMode;
-
 		public void actionPerformed(ActionEvent ae)
 		{
-			if (!armed)
-			{
-				matchMode = rba.nextBooleanArrayEntry(); // 50% matches, 50% no-matches
-				letterMode = r.nextBoolean();
-
-				if (letterMode)
-					c1 = letters.charAt(r.nextInt(letters.length()));
-				else
-					c1 = numbers.charAt(r.nextInt(numbers.length()));
-				s1Label.setFont(getRandomFont());
-				s1Label.setText("" + c1);
-				t.setInitialDelay(2000 + r.nextInt(3000));
-				t.restart();
-				armed = true;
-			} else
-			{
-				t.stop();
-
-				if (matchMode)
-					if (letterMode)
-						c2 = letters.charAt(r.nextInt(letters.length()));
-					else
-						c2 = numbers.charAt(r.nextInt(numbers.length()));
-				else if (letterMode)
-					c2 = numbers.charAt(r.nextInt(numbers.length()));
-				else
-					c2 = letters.charAt(r.nextInt(letters.length()));
-				s2Label.setFont(getRandomFont());
-				s2Label.setText("" + c2);
-				t1 = System.currentTimeMillis();
-			}
+			InputStream in;
+			if (randomNum == 0){
+				try {
+					in = new FileInputStream(new File("C:\\Users\\ADMIN\\Desktop\\New Workspace\\4HC3Research\\src\\Left.wav"));
+					AudioStream audios = new AudioStream(in);
+					AudioPlayer.player.start(audios);
+				    Thread.sleep(1000);
+					AudioPlayer.player.stop(audios);
+				}
+				catch(Exception e) {
+					JOptionPane.showMessageDialog(null,e);
+				}
+    			// System.out.println("Action event");
+    			t1 = System.currentTimeMillis();
+    			begin = true;
+		    }
+		    else if (randomNum == 1){
+				try {
+					in = new FileInputStream(new File("C:\\Users\\ADMIN\\Desktop\\New Workspace\\4HC3Research\\src\\Right.wav"));
+					AudioStream audios = new AudioStream(in);
+					AudioPlayer.player.start(audios);
+				    Thread.sleep(1000);
+					AudioPlayer.player.stop(audios);
+				}
+				catch(Exception e) {
+					JOptionPane.showMessageDialog(null,e);
+				}
+		        t1 = System.currentTimeMillis();
+		        begin = true;
+		    }
 		}
 
 		public void keyPressed(KeyEvent ke)
 		{
-			time[count] = (int)(System.currentTimeMillis() - t1);
-			key[count] = Character.toLowerCase(ke.getKeyChar());
-			match[count] = (letters.indexOf(s1Label.getText()) >= 0 && letters.indexOf(s2Label.getText()) >= 0 || numbers
-					.indexOf(s1Label.getText()) >= 0
-					&& numbers.indexOf(s2Label.getText()) >= 0) ? 1 : 0;
-
-			error[count] = match[count] == 1 && (key[count] != 'j' && key[count] != 'f') || match[count] == 0
-					&& (key[count] == 'j' || key[count] == 'f') ? 1 : 0;
-			++count;
-			if (count == maxTrials)
-			{
-				this.setVisible(false);
-				rba = new RandomBooleanArray(maxTrials);
-			}
-
-			t.setInitialDelay(2000);
-			t.restart();
-			s1Label.setText("");
-			s2Label.setText("");
-			armed = false;
+		    if (randomNum == 0) {
+    		    if (ke.getKeyCode() == KeyEvent.VK_RIGHT ) {
+        			// System.out.println("Key pressed event");
+                    randomNum = randInt(0,1);
+        			if (!begin)
+        			{
+                        numberOfErrors++;
+        				ke.consume();
+        				return;
+        			}
+        			time[count++] = (int)(System.currentTimeMillis() - t1);
+        			if (count == maxTrials)
+        			{
+        				begin = false;
+        				this.setVisible(false); // does this cause an immediate return!?
+        			} else
+        			{
+        				t.setInitialDelay(2000 + r.nextInt(3000));
+        				t.restart();
+        				begin = false;
+        			}
+    		    }
+    		    else if (ke.getKeyCode() == KeyEvent.VK_LEFT) {
+        			// System.out.println("Key pressed event");
+                    randomNum = randInt(0,1);
+                    numberOfErrors++;
+        			if (!begin)
+        			{
+                        numberOfErrors++;
+        				ke.consume();
+        				return;
+        			}
+        			time[count++] = (int)(System.currentTimeMillis() - t1);
+        			if (count == maxTrials)
+        			{
+        				begin = false;
+        				this.setVisible(false); // does this cause an immediate return!?
+        			} else
+        			{
+        				t.setInitialDelay(2000 + r.nextInt(3000));
+        				t.restart();
+        				begin = false;
+        			}
+    		    }
+		    }
+		    
+		    else if (randomNum == 1) {
+                if (ke.getKeyCode() == KeyEvent.VK_LEFT ) {
+                    randomNum = randInt(0,1);
+                    // System.out.println("Key pressed event");
+                    if (!begin)
+                    {
+                        numberOfErrors++;
+                        ke.consume();
+                        return;
+                    }
+                    time[count++] = (int)(System.currentTimeMillis() - t1);
+                    if (count == maxTrials)
+                    {
+                        begin = false;
+                        this.setVisible(false); // does this cause an immediate return!?
+                    } else
+                    {
+                        t.setInitialDelay(1000 + r.nextInt(1000));
+                        t.restart();
+                        begin = false;
+                    }
+                }
+    		    else if (ke.getKeyCode() == KeyEvent.VK_RIGHT) {
+        			// System.out.println("Key pressed event");
+                    randomNum = randInt(0,1);
+                    numberOfErrors++;
+        			if (!begin)
+        			{
+                        numberOfErrors++;
+        				ke.consume();
+        				return;
+        			}
+        			time[count++] = (int)(System.currentTimeMillis() - t1);
+        			if (count == maxTrials)
+        			{
+        				begin = false;
+        				this.setVisible(false); // does this cause an immediate return!?
+        			} else
+        			{
+        				t.setInitialDelay(2000 + r.nextInt(3000));
+        				t.restart();
+        				begin = false;
+        			}
+    		    }
+            }
 		}
+
 
 		public void keyTyped(KeyEvent ke)
 		{
@@ -1082,65 +1187,22 @@ class ReactionTimeExpFrame extends JFrame
 
 		public String SD1Results()
 		{
-			String s = "";
-			s += "time";
+			String s = "time";
 			for (int i = 0; i < time.length; ++i)
 				s += "," + time[i];
-			s += "\n";
-			s += "keys";
-			for (int i = 0; i < time.length; ++i)
-				s += "," + key[i];
-			s += "\n";
-			s += "matches";
-			for (int i = 0; i < time.length; ++i)
-				s += "," + match[i];
-			s += "\n";
-			s += "errors";
-			for (int i = 0; i < time.length; ++i)
-				s += "," + error[i];
 			s += "\n";
 			return s;
 		}
 
 		public String SD2Results()
 		{
-			double meanMatchTime = 0.0;
-			double meanNoMatchTime = 0.0;
-			int nMatch = 0;
-			int nNoMatch = 0;
-			int nMatchError = 0;
-			int nNoMatchError = 0;
-			for (int i = 0; i < time.length; ++i)
-			{
-				if (match[i] == 1) // match
-				{
-					if (error[i] == 0)
-					{
-						meanMatchTime += time[i];
-						++nMatch;
-					} else
-						++nMatchError;
-				} else
-				// no match
-				{
-					if (error[i] == 0)
-					{
-						meanNoMatchTime += time[i];
-						++nNoMatch;
-					} else
-						++nNoMatchError;
-				}
-			}
-			meanMatchTime /= nMatch;
-			meanNoMatchTime /= nNoMatch;
-
-			return participantCode + "," + blockCode + "," + mode + "," + meanMatchTime + "," + nMatch + ","
-					+ nMatchError + "," + meanNoMatchTime + "," + nNoMatch + "," + nNoMatchError;
+			return String.format("%s,%s,%s,%f,%d,%d,%f", participantCode, blockCode, mode, mean(time), min(time),
+					max(time), sd(time));			
 		}
 
 		public String SD2Header()
 		{
-			return "Participant,Block,Mode,RT_match,n_match,error_match," + "RT_no-match,n_no-match,error_no-match\n";
+			return "Participant,Block,Mode,mean,min,max,sd\n";
 		}
 	}
 
@@ -1418,6 +1480,7 @@ class ReactionTimeExpFrame extends JFrame
 
 	    return randomNum;
 	}
+	
 }
 
 // ---------
